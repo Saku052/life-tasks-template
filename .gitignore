@@ -1,0 +1,17 @@
+# bootstrap.sh が自動生成する。Project/フィールドの ID が入るので追跡しない
+scripts/project.env
+
+# 情報収集スキルの出力。個人の関心がそのまま出るので追跡しない
+ideas/daily/*.md
+
+# プロフィール。氏名・所属・生活圏が入るため追跡しない。
+# docs/profile.example.md をコピーして docs/profile.md を作る
+docs/profile.md
+
+# OS / エディタ
+Thumbs.db
+.DS_Store
+*.swp
+
+# 一時ファイル
+*.tmp

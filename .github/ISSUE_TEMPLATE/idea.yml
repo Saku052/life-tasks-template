@@ -1,0 +1,28 @@
+name: "ネタ・インプット"
+description: "記事/動画/学習ネタなど、あとで消化したいインプット"
+title: "[Idea] "
+labels: []
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: どんなネタか。何に使えそうか。
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: ソース
+      description: URL や出典。skills(neta-trend-daily / url-digest)が自動で埋めることがある。
+      value: |
+        - 
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 消化ステップ
+      value: |
+        - [ ] 読む / 見る
+        - [ ] 要点をメモに残す
+        - [ ] アウトプット先を決める（記事 / 動画 / 実装 / 見送り）

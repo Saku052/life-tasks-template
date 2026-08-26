@@ -1,0 +1,35 @@
+# ラベル定義（./scripts/bootstrap.sh --labels-only で同期する）
+# 領域(area)を表すラベルのみを置く。優先度と期限は Projects のフィールドで持つ。
+- name: Study
+  color: "0366d6"
+  description: 学業（授業・課題・レポート・試験・研究）
+- name: Career
+  color: "5319e7"
+  description: 就活（ES・面接・インターン・説明会・OB訪問）
+- name: Work
+  color: "b60205"
+  description: バイト・インターンでの業務
+- name: Circle
+  color: "d876e3"
+  description: サークル活動
+- name: Dev
+  color: "1d76db"
+  description: 個人開発・OSS
+- name: Tech
+  color: "006b75"
+  description: 技術キャッチアップ・学習
+- name: Life
+  color: "0e8a16"
+  description: 生活・手続き・家族
+- name: Money
+  color: "fbca04"
+  description: 学費・奨学金・家計
+- name: Health
+  color: "e99695"
+  description: 健康・通院・検診・運動
+- name: Idea
+  color: "c5def5"
+  description: ネタ・インプット（X 発信ネタ含む・消化前）
+- name: Routine
+  color: "d4c5f9"
+  description: 定期的に発生するタスク

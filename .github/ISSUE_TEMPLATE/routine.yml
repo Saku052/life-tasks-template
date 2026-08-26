@@ -1,0 +1,44 @@
+name: "定期タスク"
+description: "毎週・毎月など繰り返し発生するもの"
+title: "[Routine] "
+labels: []
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何を、どのサイクルで回すか。
+      placeholder: "例: 家計の締め。毎月1日に前月の支出をカテゴリ別に集計する。"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cycle
+    attributes:
+      label: サイクル
+      options:
+        - 毎日
+        - 毎週
+        - 隔週
+        - 毎月
+        - 四半期
+        - 毎年
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 手順チェックリスト
+      description: 毎回同じ手順を踏めるように書く。次回はこのIssueを複製して使う。
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: input
+    id: next
+    attributes:
+      label: 次回実施日
+      placeholder: "2026-09-01"

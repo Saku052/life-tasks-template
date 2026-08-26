@@ -1,0 +1,46 @@
+name: "タスク"
+description: "仕事・プライベート問わず、やること全般"
+title: "[Task] "
+labels: []
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 1〜3行。「何を」「なぜ」やるのか。未来の自分が読んで思い出せる粒度で。
+      placeholder: |
+        例: 賃貸の更新手続きをする。契約満了が2026/03/31なので2ヶ月前までに意思表示が必要。
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 完了に必要な手順
+      description: 実行可能な単位に割る。1項目=1アクション。着手中に増やしてOK。
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: input
+    id: dod
+    attributes:
+      label: 完了条件 (Definition of Done)
+      description: 「これが済んだらDone」と言い切れる状態を1行で。
+      placeholder: "例: 更新契約書を返送し、控えをスキャンして保管した"
+
+  - type: input
+    id: due
+    attributes:
+      label: 期限
+      description: "YYYY-MM-DD 形式。なければ空欄で可。"
+      placeholder: "2026-01-31"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: メモ・参考リンク
+      description: 調べたこと、関連Issue (#123)、URLなど。作業ログとして追記していく。
