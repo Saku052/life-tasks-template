@@ -13,6 +13,14 @@ Claude Code から自然言語で操作する。
 実際の変換の様子は [docs/examples.md](docs/examples.md)、
 なぜこの設計なのかは [docs/design.md](docs/design.md) にまとめてある。
 
+## 動いているものを見る
+
+- **[デモボード](https://github.com/users/0hato0/projects/3)** — 4列のカンバンに `demo` ラベルのIssueが載っている
+- **[Issues タブ](../../issues?q=label%3Ademo)** — 「概要 / 完了に必要な手順 / 完了条件」の型が入ったIssueの実物
+
+どちらも `demo` ラベル付きの動作例で、実在の企業・団体とは関係ない。
+fork してもIssueは複製されないので、そのまま自分のタスクを入れて使える。
+
 ---
 
 ## 何が入っているか
