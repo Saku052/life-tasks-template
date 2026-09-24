@@ -1,6 +1,6 @@
 blank_issues_enabled: true
 contact_links:
   # fork して使う場合は、bootstrap.sh 実行後に表示される Project の URL に書き換える
-  - name: 今日のボードを見る（デモ）
-    url: https://github.com/users/0hato0/projects/3
+  - name: 今日のボードを見る
+    url: https://github.com/users/Saku052/projects/2
     about: Projects のカンバンで全タスクの状況を確認する
