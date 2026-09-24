@@ -183,8 +183,14 @@ EOF
 info "設定を書き出しました: $ENV_FILE"
 
 # Issue テンプレートのリンク先を実際の Project に差し替え
-sed -i "s#https://github.com/users/OWNER_PLACEHOLDER/projects/PROJECT_NUMBER_PLACEHOLDER#$PROJECT_URL#" \
-  "$REPO_ROOT/.github/ISSUE_TEMPLATE/config.yml" 2>/dev/null || true
+# デモボードの URL が入っているので、どの Project URL でも差し替える。
+# sed -i は GNU と BSD (macOS) で引数が違うので、一時ファイル経由で置き換える
+CONFIG_YML="$REPO_ROOT/.github/ISSUE_TEMPLATE/config.yml"
+if [ -f "$CONFIG_YML" ]; then
+  sed -e "s#https://github.com/users/[^/]*/projects/[A-Za-z0-9_]*#$PROJECT_URL#" \
+      -e "s#今日のボードを見る（デモ）#今日のボードを見る#" \
+    "$CONFIG_YML" > "$CONFIG_YML.tmp" && mv "$CONFIG_YML.tmp" "$CONFIG_YML"
+fi
 
 if [ "$DO_PUSH" = "1" ]; then
   info "初回 push します"

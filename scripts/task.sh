@@ -318,9 +318,13 @@ cmd_due() {
 # ---------------------------------------------------------------- stale
 
 cmd_stale() {
-  local days="${1:-7}" cutoff
+  local days="${1:-7}" cutoff py
+  py="import datetime;print((datetime.datetime.utcnow()-datetime.timedelta(days=$days)).strftime('%Y-%m-%dT%H:%M:%SZ'))"
+  # GNU date -> BSD date (macOS) -> python3 -> python の順に試す
   cutoff=$(date -u -d "-${days} days" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) \
-    || cutoff=$(python -c "import datetime;print((datetime.datetime.utcnow()-datetime.timedelta(days=$days)).strftime('%Y-%m-%dT%H:%M:%SZ'))")
+    || cutoff=$(date -u -v-"${days}"d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) \
+    || cutoff=$(python3 -c "$py" 2>/dev/null) \
+    || cutoff=$(python -c "$py")
   echo "## ${days}日以上動いていないタスク（Done 以外）"
   fetch_items | jq -r --arg c "$cutoff" '
     [.[] | select(.status != "Done" and .updatedAt < $c)]
