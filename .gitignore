@@ -1,0 +1,15 @@
+# 会社のタスク。このPCから出さない
+data/
+
+# 私用タスクの秘密URLと合言葉
+config.json
+
+# 会社プロフィール
+profile.md
+
+# ボードのサーバ
+.server.pid
+
+__pycache__/
+*.tmp
+.DS_Store

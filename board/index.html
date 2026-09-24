@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>タスクボード</title>
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eef0f3;
+  --border: #d9dde3;
+  --text: #1c2128;
+  --muted: #5d6673;
+  --work: #0b62d6;
+  --work-bg: #e3eefc;
+  --personal: #7a3fd1;
+  --personal-bg: #efe6fc;
+  --p0: #c62828;
+  --p0-bg: #fde8e8;
+  --p1: #9a6700;
+  --p1-bg: #fff3d0;
+  --p2: #57606a;
+  --p2-bg: #eceff2;
+  --danger: #c62828;
+  --warn: #9a6700;
+  --ok: #1a7f37;
+  --drop: #dbe8fb;
+  --shadow: 0 1px 2px rgba(20, 30, 45, .06), 0 1px 1px rgba(20, 30, 45, .04);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1216;
+    --surface: #181c22;
+    --surface-2: #20252d;
+    --border: #2e353f;
+    --text: #e6e9ee;
+    --muted: #9aa4b1;
+    --work: #6ea8ff;
+    --work-bg: #16263d;
+    --personal: #b99af5;
+    --personal-bg: #271d3d;
+    --p0: #ff8a80;
+    --p0-bg: #3a1a1a;
+    --p1: #e3b341;
+    --p1-bg: #33290f;
+    --p2: #9aa4b1;
+    --p2-bg: #252a31;
+    --danger: #ff8a80;
+    --warn: #e3b341;
+    --ok: #56d364;
+    --drop: #1b2c45;
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Segoe UI", sans-serif;
+}
+header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  padding: 16px 20px 12px;
+}
+h1 { font-size: 18px; margin: 0; letter-spacing: .02em; }
+.sync { color: var(--muted); font-size: 12px; }
+.sync .err { color: var(--danger); }
+.spacer { flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button {
+  border: 0; background: transparent; color: var(--muted); padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); font-weight: 600; }
+.btn {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+}
+.btn:hover { background: var(--surface-2); }
+.legend { display: flex; gap: 14px; padding: 0 20px 12px; color: var(--muted); font-size: 12px; }
+.board {
+  display: grid; grid-template-columns: repeat(4, minmax(250px, 1fr)); gap: 12px;
+  padding: 0 20px 24px; overflow-x: auto; align-items: start;
+}
+.col {
+  background: var(--surface-2); border-radius: 10px; padding: 10px; min-height: 160px;
+  border: 2px solid transparent; transition: background .12s, border-color .12s;
+}
+.col.drop { background: var(--drop); border-color: var(--work); }
+.col-head { display: flex; align-items: baseline; gap: 8px; padding: 2px 4px 10px; }
+.col-head h2 { font-size: 14px; margin: 0; }
+.count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.count.over { color: var(--danger); font-weight: 600; }
+.cards { display: flex; flex-direction: column; gap: 8px; }
+.empty { color: var(--muted); font-size: 12px; text-align: center; padding: 18px 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px 8px;
+  box-shadow: var(--shadow); cursor: pointer; border-left: 3px solid var(--work);
+}
+.card.personal { border-left-color: var(--personal); }
+.card[draggable="true"] { cursor: grab; }
+.card.dragging { opacity: .45; }
+.card:hover { border-color: color-mix(in srgb, var(--border) 50%, var(--text)); }
+.card:focus-visible { outline: 2px solid var(--work); outline-offset: 1px; }
+.card-top { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.src { font-weight: 600; border-radius: 4px; padding: 0 6px; font-size: 11px; }
+.src.work { color: var(--work); background: var(--work-bg); }
+.src.personal { color: var(--personal); background: var(--personal-bg); }
+.title { font-weight: 600; font-size: 13.5px; line-height: 1.45; word-break: break-word; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+.prio { font-weight: 700; border-radius: 4px; padding: 0 5px; }
+.prio.P0 { color: var(--p0); background: var(--p0-bg); }
+.prio.P1 { color: var(--p1); background: var(--p1-bg); }
+.prio.P2 { color: var(--p2); background: var(--p2-bg); }
+.due.soon { color: var(--warn); font-weight: 600; }
+.due.over { color: var(--danger); font-weight: 700; }
+.prog.full { color: var(--ok); }
+.label { border: 1px solid var(--border); border-radius: 999px; padding: 0 7px; }
+.wait { margin-top: 6px; font-size: 12px; color: var(--muted); background: var(--surface-2); border-radius: 6px; padding: 3px 7px; }
+dialog {
+  border: 1px solid var(--border); border-radius: 12px; padding: 0; width: min(640px, calc(100vw - 32px));
+  background: var(--surface); color: var(--text); box-shadow: 0 12px 40px rgba(0,0,0,.25);
+}
+dialog::backdrop { background: rgba(10, 14, 20, .45); }
+.dlg-head { padding: 16px 20px 10px; border-bottom: 1px solid var(--border); }
+.dlg-head h3 { margin: 4px 0 8px; font-size: 17px; }
+.dlg-body { padding: 8px 20px 16px; max-height: 60vh; overflow: auto; }
+.dlg-body h4 { font-size: 13px; margin: 14px 0 6px; color: var(--muted); }
+.dlg-body p { margin: 4px 0; }
+.dlg-body ul { margin: 4px 0; padding-left: 20px; }
+.dlg-body label.chk { display: flex; gap: 8px; align-items: flex-start; padding: 3px 0; }
+.dlg-body label.chk input { margin-top: 3px; }
+.dlg-body .done-text { color: var(--muted); text-decoration: line-through; }
+.dlg-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--border); }
+.note { color: var(--muted); font-size: 12px; }
+.log { font-size: 12px; color: var(--muted); }
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--text); color: var(--bg);
+  padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.toast.show { opacity: .95; }
+.banner { margin: 0 20px 12px; padding: 10px 14px; border-radius: 8px; background: var(--p0-bg); color: var(--danger); font-size: 13px; }
+@media (max-width: 720px) {
+  header { padding: 12px 16px 8px; }
+  .legend { padding: 0 16px 10px; }
+  .board { padding: 0 16px 20px; grid-template-columns: repeat(4, minmax(240px, 82vw)); }
+  .banner { margin: 0 16px 10px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>タスクボード</h1>
+    <div class="sync" id="sync">読み込み中…</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="seg" role="group" aria-label="表示するタスク">
+    <button data-filter="all" aria-pressed="true">すべて</button>
+    <button data-filter="work" aria-pressed="false">会社</button>
+    <button data-filter="personal" aria-pressed="false">私用</button>
+  </div>
+  <button class="btn" id="refresh" title="私用タスクを今すぐ取り直す">更新</button>
+</header>
+<div class="legend">
+  <span><span class="src work">会社</span> このPCに保存。ドラッグで移動できる</span>
+  <span><span class="src personal">私用</span> 閲覧のみ。変更は私用のスマホやPCから</span>
+</div>
+<div id="banner"></div>
+<main class="board" id="board"></main>
+
+<dialog id="dlg">
+  <div class="dlg-head" id="dlg-head"></div>
+  <div class="dlg-body" id="dlg-body"></div>
+  <div class="dlg-foot">
+    <span class="note" id="dlg-note"></span>
+    <button class="btn" id="dlg-close">閉じる</button>
+  </div>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUSES = ["To do", "Pending", "In progress", "Done"];
+let state = null;
+let filter = "all";
+let openId = null;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+try { filter = localStorage.getItem("board-filter") || "all"; } catch (e) {}
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function fmtTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function dueInfo(due) {
+  if (!due) return null;
+  const [y, m, d] = due.split("-").map(Number);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = Math.round((new Date(y, m - 1, d) - today) / 86400000);
+  let cls = "", text = `${m}/${d}`;
+  if (days < 0) { cls = "over"; text = `期限切れ ${m}/${d}`; }
+  else if (days === 0) { cls = "over"; text = `今日 ${m}/${d}`; }
+  else if (days <= 3) { cls = "soon"; text = `あと${days}日 ${m}/${d}`; }
+  return { cls, text };
+}
+
+function sortKey(t) {
+  const p = { P0: 0, P1: 1, P2: 2 }[t.priority] ?? 3;
+  return [p, t.due || "9999-99-99"];
+}
+function cmp(a, b) {
+  const x = sortKey(a), y = sortKey(b);
+  return x[0] - y[0] || (x[1] < y[1] ? -1 : x[1] > y[1] ? 1 : 0);
+}
+
+function allItems() {
+  if (!state) return [];
+  const items = [];
+  if (filter !== "personal") items.push(...state.work);
+  if (filter !== "work") items.push(...state.personal);
+  return items;
+}
+
+function findItem(id) {
+  return [...state.work, ...state.personal].find((t) => t.id === id);
+}
+
+function cardHTML(t) {
+  const work = t.source === "work";
+  const due = dueInfo(t.due);
+  const [done, total] = t.progress || [0, 0];
+  const meta = [];
+  if (t.priority) meta.push(`<span class="prio ${esc(t.priority)}">${esc(t.priority)}</span>`);
+  if (due) meta.push(`<span class="due ${due.cls}">${esc(due.text)}</span>`);
+  if (total) meta.push(`<span class="prog ${done === total ? "full" : ""}">☑ ${done}/${total}</span>`);
+  for (const l of t.labels || []) meta.push(`<span class="label">${esc(l)}</span>`);
+  return `
+    <article class="card ${work ? "work" : "personal"}" tabindex="0" data-id="${esc(t.id)}" ${work ? 'draggable="true"' : ""}
+             aria-label="${work ? "会社" : "私用"}: ${esc(t.title)}">
+      <div class="card-top">
+        <span class="src ${work ? "work" : "personal"}">${work ? "会社" : "私用"}</span>
+        <span>${esc(t.id)}</span>
+        ${work ? "" : '<span title="閲覧のみ">🔒</span>'}
+      </div>
+      <div class="title">${esc(t.title)}</div>
+      ${meta.length ? `<div class="meta">${meta.join("")}</div>` : ""}
+      ${t.status === "Pending" && t.pendingReason ? `<div class="wait">⏳ ${esc(t.pendingReason)}</div>` : ""}
+    </article>`;
+}
+
+function render() {
+  const items = allItems();
+  const limits = (state && state.limits) || {};
+  $("board").innerHTML = STATUSES.map((s) => {
+    const col = items.filter((t) => t.status === s).sort(cmp);
+    // 上限は会社 + 私用の合計で数える（手が回る量は1人分なので）
+    const both = state ? [...state.work, ...state.personal].filter((t) => t.status === s).length : 0;
+    const limit = limits[s];
+    const count = limit ? `${both} / ${limit}` : `${col.length}`;
+    return `
+      <section class="col" data-status="${esc(s)}">
+        <div class="col-head"><h2>${esc(s)}</h2><span class="count ${limit && both > limit ? "over" : ""}">${count}</span></div>
+        <div class="cards">${col.length ? col.map(cardHTML).join("") : '<div class="empty">なし</div>'}</div>
+      </section>`;
+  }).join("");
+
+  const sync = [];
+  sync.push(`会社 ${state.work.filter((t) => t.status !== "Done").length} 件`);
+  if (state.personalError) {
+    sync.push(`<span class="err">私用: ${esc(state.personalError)}</span>`);
+  } else {
+    sync.push(`私用 ${state.personal.filter((t) => t.status !== "Done").length} 件（最終変更 ${esc(fmtTime(state.personalGeneratedAt))}・${esc(fmtTime(state.personalFetchedAt))} に取得）`);
+  }
+  $("sync").innerHTML = sync.join(" · ");
+  $("banner").innerHTML = state.personalError && !state.personal.length
+    ? `<div class="banner">私用タスクを表示できません: ${esc(state.personalError)}</div>` : "";
+
+  document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === filter)));
+  if (openId && $("dlg").open) {
+    const t = findItem(openId);
+    if (t) fillDialog(t);
+  }
+}
+
+async function load(force = false) {
+  try {
+    const r = await fetch("/api/state" + (force ? "?refresh=1" : ""), { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    state = await r.json();
+    render();
+    if (force) toast("更新しました");
+  } catch (e) {
+    $("sync").innerHTML = '<span class="err">ボードのサーバに接続できません。ターミナルで ./office.py open を実行してください</span>';
+  }
+}
+
+async function post(path, body) {
+  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data };
+}
+
+async function moveWork(t, status) {
+  if (t.status === status) return;
+  const body = { status };
+  if (status === "Pending") {
+    const reason = prompt("何を待っていますか？（Pending には待ち対象が必要です）", t.pendingReason || "");
+    if (reason === null) return;
+    if (!reason.trim()) { toast("待ち対象が空なので移動しませんでした"); return; }
+    body.reason = reason.trim();
+  }
+  let res = await post(`/api/work/${t.number}/move`, body);
+  if (res.status === 409 && res.data.error === "checklist") {
+    const left = res.data.remaining.map((x) => "・" + x).join("\n");
+    if (!confirm(`未完了の手順が残っています:\n${left}\n\nそれでも完了にしますか？`)) return;
+    res = await post(`/api/work/${t.number}/move`, { ...body, force: true });
+  }
+  if (!res.ok) { toast("移動できませんでした"); return; }
+  toast(`${t.id} → ${status}`);
+  load();
+}
+
+function bodyHTML(t) {
+  const work = t.source === "work";
+  let idx = 0, html = "", inList = false;
+  const closeList = () => { if (inList) { html += "</ul>"; inList = false; } };
+  for (const raw of (t.body || "").split("\n")) {
+    const line = raw.trimEnd();
+    const chk = line.match(/^\s*- \[([ xX])\] ?(.*)$/);
+    if (chk) {
+      closeList();
+      const done = chk[1] !== " ";
+      html += `<label class="chk"><input type="checkbox" data-index="${idx}" ${done ? "checked" : ""} ${work ? "" : "disabled"}>
+               <span class="${done ? "done-text" : ""}">${esc(chk[2])}</span></label>`;
+      idx++;
+    } else if (/^#{1,6}\s/.test(line)) {
+      closeList();
+      html += `<h4>${esc(line.replace(/^#+\s*/, ""))}</h4>`;
+    } else if (/^\s*[-*]\s+/.test(line)) {
+      if (!inList) { html += "<ul>"; inList = true; }
+      html += `<li>${esc(line.replace(/^\s*[-*]\s+/, ""))}</li>`;
+    } else if (line.trim()) {
+      closeList();
+      html += `<p>${esc(line)}</p>`;
+    } else {
+      closeList();
+    }
+  }
+  closeList();
+  if (work && (t.notes || []).length) {
+    html += "<h4>作業ログ</h4>" + t.notes.map((n) => `<div class="log">${esc(fmtTime(n.at))} ${esc(n.text)}</div>`).join("");
+  }
+  return html || '<p class="note">本文はありません</p>';
+}
+
+function fillDialog(t) {
+  const work = t.source === "work";
+  const due = dueInfo(t.due);
+  const meta = [`<span class="src ${work ? "work" : "personal"}">${work ? "会社" : "私用"}</span>`, `<span>${esc(t.id)}</span>`, `<span>${esc(t.status)}</span>`];
+  if (t.priority) meta.push(`<span class="prio ${esc(t.priority)}">${esc(t.priority)}</span>`);
+  if (due) meta.push(`<span class="due ${due.cls}">${esc(due.text)}</span>`);
+  for (const l of t.labels || []) meta.push(`<span class="label">${esc(l)}</span>`);
+  $("dlg-head").innerHTML = `<div class="meta">${meta.join("")}</div><h3>${esc(t.title)}</h3>
+    ${t.status === "Pending" && t.pendingReason ? `<div class="wait">⏳ ${esc(t.pendingReason)}</div>` : ""}`;
+  $("dlg-body").innerHTML = bodyHTML(t);
+  $("dlg-note").textContent = work
+    ? "チェックはここで付けられます。ステータスはカードをドラッグして変更"
+    : "私用タスクは閲覧のみです。変更は私用のスマホやPCから";
+}
+
+function openDialog(id) {
+  const t = findItem(id);
+  if (!t) return;
+  openId = id;
+  fillDialog(t);
+  $("dlg").showModal();
+}
+
+// ---- events
+$("board").addEventListener("click", (e) => {
+  const card = e.target.closest(".card");
+  if (card) openDialog(card.dataset.id);
+});
+$("board").addEventListener("keydown", (e) => {
+  const card = e.target.closest(".card");
+  if (card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDialog(card.dataset.id); }
+});
+$("board").addEventListener("dragstart", (e) => {
+  const card = e.target.closest(".card[draggable='true']");
+  if (!card) return;
+  e.dataTransfer.setData("text/plain", card.dataset.id);
+  e.dataTransfer.effectAllowed = "move";
+  card.classList.add("dragging");
+});
+$("board").addEventListener("dragend", (e) => {
+  e.target.closest(".card")?.classList.remove("dragging");
+  document.querySelectorAll(".col.drop").forEach((c) => c.classList.remove("drop"));
+});
+$("board").addEventListener("dragover", (e) => {
+  const col = e.target.closest(".col");
+  if (!col) return;
+  e.preventDefault();
+  document.querySelectorAll(".col.drop").forEach((c) => c !== col && c.classList.remove("drop"));
+  col.classList.add("drop");
+});
+$("board").addEventListener("drop", (e) => {
+  const col = e.target.closest(".col");
+  if (!col) return;
+  e.preventDefault();
+  col.classList.remove("drop");
+  const t = findItem(e.dataTransfer.getData("text/plain"));
+  if (t && t.source === "work") moveWork(t, col.dataset.status);
+});
+$("dlg-body").addEventListener("change", async (e) => {
+  const box = e.target.closest("input[type=checkbox]");
+  const t = openId && findItem(openId);
+  if (!box || !t || t.source !== "work") return;
+  const res = await post(`/api/work/${t.number}/check`, { index: Number(box.dataset.index), checked: box.checked });
+  if (!res.ok) { toast("更新できませんでした"); box.checked = !box.checked; return; }
+  load();
+});
+$("dlg-close").addEventListener("click", () => $("dlg").close());
+$("dlg").addEventListener("close", () => { openId = null; });
+document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => {
+  filter = b.dataset.filter;
+  try { localStorage.setItem("board-filter", filter); } catch (e) {}
+  render();
+}));
+$("refresh").addEventListener("click", () => load(true));
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
