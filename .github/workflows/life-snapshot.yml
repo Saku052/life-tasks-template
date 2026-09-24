@@ -37,7 +37,13 @@ jobs:
         with:
           sparse-checkout: scripts
       - name: 書き出し
-        run: ./scripts/snapshot.sh
+        run: |
+          # トークン登録前は失敗させずにスキップする（失敗通知のメールを出さないため）
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::SNAPSHOT_TOKEN が未登録のためスキップしました"
+            exit 0
+          fi
+          ./scripts/snapshot.sh
         env:
           GH_TOKEN: ${{ secrets.SNAPSHOT_TOKEN }}
           PROJECT_ID: ${{ vars.PROJECT_ID }}
