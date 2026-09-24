@@ -1,6 +1,9 @@
 # bootstrap.sh が自動生成する。Project/フィールドの ID が入るので追跡しない
 scripts/project.env
 
+# snapshot.sh の書き出し先 gist と合言葉。追跡しない
+scripts/snapshot.env
+
 # 情報収集スキルの出力。個人の関心がそのまま出るので追跡しない
 ideas/daily/*.md
 

@@ -413,3 +413,11 @@ case "$sub" in
   sync)    cmd_sync "$@" ;;
   *) usage; die "不明なサブコマンド: $sub" ;;
 esac
+
+# 状態を変えた操作のあとは、会社PC向けの閲覧用コピーを裏で更新する（snapshot.env があるときだけ）
+case "$sub" in
+  add|move|start|done|check|uncheck|due|merge|sync)
+    [ -f "$SCRIPT_DIR/snapshot.env" ] && ( "$SCRIPT_DIR/snapshot.sh" >/dev/null 2>&1 & )
+    ;;
+esac
+exit 0

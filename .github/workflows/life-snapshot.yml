@@ -1,0 +1,45 @@
+# 私用ボードの閲覧用コピーを暗号化して secret gist に書き出す（scripts/snapshot.sh）。
+# スマホやブラウザでボードを触っても、Mac を開かずに会社PC側へ反映されるようにするため。
+#
+# 有効にするには、タスク用リポジトリ（Settings > Secrets and variables > Actions）に以下を登録する。
+# 未登録のリポジトリ（公開フォークなど）ではジョブごとスキップされる。
+#   Variables: SNAPSHOT_GIST_ID, PROJECT_ID
+#   Secrets:   SNAPSHOT_TOKEN（classic PAT: repo, read:project, gist）, SNAPSHOT_PASSPHRASE
+#
+# ボード上のカード移動は Actions のイベントにならないので、定期実行で拾う。
+# private リポジトリの無料枠（月2,000分）に収まるよう30分間隔にしている。
+name: life snapshot
+
+on:
+  issues:
+    types: [opened, edited, deleted, closed, reopened]
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+# 連続したイベントは1本にまとめる（待機中の古い実行は新しい実行に置き換わる）
+concurrency:
+  group: life-snapshot
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: vars.SNAPSHOT_GIST_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - name: 書き出し
+        run: ./scripts/snapshot.sh
+        env:
+          GH_TOKEN: ${{ secrets.SNAPSHOT_TOKEN }}
+          PROJECT_ID: ${{ vars.PROJECT_ID }}
+          SNAPSHOT_GIST_ID: ${{ vars.SNAPSHOT_GIST_ID }}
+          SNAPSHOT_PASSPHRASE: ${{ secrets.SNAPSHOT_PASSPHRASE }}

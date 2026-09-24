@@ -150,6 +150,21 @@ Pending にするときは何を待っているかを必ず残す（`--reason`�
 `board` と `stale 7` を突き合わせ、In progress の詰まり・30日放置の To do・
 解消済みの Pending を洗い出して整理する。
 
+## 会社PCで私用タスクを見る（任意）
+
+会社PCでは GitHub にログインせずに、会社のタスクと私用のタスクを1枚のボードに並べられる。
+私用側は変更のたびにボードの暗号化コピーを secret gist に書き出し、会社PCはそれを読むだけ。
+会社のタスクは会社PCにだけ保存され、私用側からは見えない。会社PC側の仕組みは
+[office ブランチ](../../tree/office) にある。
+
+私用側の設定:
+
+1. `scripts/snapshot.env` に書き出し先の gist ID と合言葉を書く（`SNAPSHOT_GIST_ID` / `SNAPSHOT_PASSPHRASE`。追跡しない）。
+   以降、`task.sh` で状態を変えるたびに裏で書き出される
+2. スマホやブラウザでの変更も拾うには、タスク用リポジトリの Actions に
+   Variables `SNAPSHOT_GIST_ID` / `PROJECT_ID`、Secrets `SNAPSHOT_PASSPHRASE` / `SNAPSHOT_TOKEN`
+   （classic PAT: `repo`, `read:project`, `gist`）を登録する（`.github/workflows/life-snapshot.yml`）
+
 ## ディレクトリ
 
 ```
@@ -160,6 +175,7 @@ Pending にするときは何を待っているかを必ず残す（`--reason`�
 scripts/
   bootstrap.sh          初期構築
   task.sh               日々の操作の入口
+  snapshot.sh           会社PC向けの暗号化コピーを書き出す
   lib.sh                共通処理
   project.env.example   自動生成される project.env の見本
 docs/
